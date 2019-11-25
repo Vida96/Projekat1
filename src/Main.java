@@ -1,7 +1,4 @@
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,17 +49,50 @@ public class Main {
         return binaryCodedCoordinates;
     }
 
-    //racunanje z = f(x, y)
+    //racunanje funckcije z = f(x, y)
     private static List<Double> computeFunctionOfCoordinates(List<Double> cooridantesX, List<Double> cooridantesY) {
      List<Double> computedFunction = new ArrayList<Double>(cooridantesX.size());
      Stream.concat(cooridantesX.stream(), cooridantesY.stream()).forEachOrdered(str -> {
+
+           /*
+           3*Math.pow((1-c.x),2)*Math.exp(-Math.pow(c.x,2)-Math.pow((c.y+1),2))-10*(c.x/5.0-Math.pow(c.x, 3)-Math.pow(c.y,5))*Math.exp(-Math.pow(c.x, 2)-Math.pow(c.y, 2))-(1/3.0)*Math.exp(-Math.pow(c.x+1, 2)-Math.pow(c.y, 2)));
+            */
+
             // compute function
         // computedFunction.add(izracunata f-ja)
      });
      return computedFunction;
     }
 
-    public static void main(String[] args){
+    private static List<Double> computeFitnessFunction(List<Double> computedFunctionZ, boolean isMinimum){
+        List<Double> computedFitnesFunction = new ArrayList<Double>(computedFunctionZ.size());
+        Double referenceValue = computedFunctionZ.get(0);
+        if(isMinimum) //za minimum
+         computedFunctionZ.stream().forEach(fx ->{
+            computedFitnesFunction.add(referenceValue - fx); //𝑓𝑓(𝑥) = max [𝑥𝑖] 𝑓(𝑥) − 𝑓(𝑥)
+         });
+        else{
+            computedFunctionZ.stream().forEach(fx ->{
+                computedFitnesFunction.add(fx - referenceValue); //𝑓𝑓(𝑥) = 𝑓(𝑥) − min [xi] 𝑓(𝑥)
+            });
+        }
+        return  computedFitnesFunction;
+    }
+
+    private static Double computeRateOfPopulation(List<Double> fitnessMinComputedFunction) {
+        return  fitnessMinComputedFunction.stream().mapToDouble(f -> f.doubleValue()).sum();
+    }
+
+    //racunanje 𝑝[𝑖] = 𝑓𝑓(𝑥[𝑖]) / 𝐹
+    private static List<Double> computeIndividualsSelectionProbaibility(List<Double> fitnessMaxComputedFunction, Double rateOfPopulation) {
+        List<Double> computedProbaibility = new ArrayList<Double>(fitnessMaxComputedFunction.size());
+        fitnessMaxComputedFunction.stream().forEach(ffx ->{
+            computedProbaibility.add(ffx / rateOfPopulation); //𝑝[𝑖] = 𝑓𝑓(𝑥[𝑖]) / 𝐹
+        });
+        return  computedProbaibility;
+    }
+
+    public static void main(String[] args) {
 
         Scanner scInt = new Scanner(System.in);
         Scanner scDouble = new Scanner(System.in);
@@ -92,13 +122,26 @@ public class Main {
         //racunanje f(x), ff(x) i ispis (Tabela 3. u PDF-u) - ocjena pocetne populacije
         List<Double> computedFunctionZ = computeFunctionOfCoordinates(cooridantesX, cooridantesY);
 
+        //racunanje ff(x) za minimum funkcije
+        Collections.sort(computedFunctionZ); //uzlazno sortiranje, za minimum
+        List<Double> fitnessMinComputedFunction = computeFitnessFunction(computedFunctionZ, true);
+
+        //racunanje ff(x) za maximum funkcije
+        Collections.sort(computedFunctionZ, Collections.reverseOrder()); //opadajuce soritranje, za maximum
+        List<Double> fitnessMaxComputedFunction = computeFitnessFunction(computedFunctionZ, false);
+
         //racunanje ocjene cijele pocetne populacije (F)
+        Double rateOfPopulation = computeRateOfPopulation(fitnessMinComputedFunction);
 
         //racunanje vjerovatnoce izbora jedinke (p)
+        List<Double> individualsSelectionProbaibilityMax = computeIndividualsSelectionProbaibility(fitnessMaxComputedFunction, rateOfPopulation); // za maksimum
+
+        List<Double> individualsSelectionProbaibilityMin = computeIndividualsSelectionProbaibility(fitnessMinComputedFunction, rateOfPopulation); // za minimum
 
         //racunanje kumulativne vjerovatnoce (q)
 
         //ruletska selekcija (ispis kao Tabela 5.)
+
 
         //ispis medjugeneracije (ispis kao Tabela 6.)
 

@@ -52,13 +52,6 @@ public class Main {
         return binaryCodedCoordinates;
     }
 
-    private static void printingInitialPopulation(List<Double> cooridantesX, List<Double> cooridantesY) {
-        System.out.println("x                   y" );
-        int[] i = {0};
-        cooridantesX.forEach(coordinate -> {
-            System.out.println(coordinate +  " " + cooridantesY.get(i[0]++));
-        });
-    }
     //racunanje z = f(x, y)
     private static List<Double> computeFunctionOfCoordinates(List<Double> cooridantesX, List<Double> cooridantesY) {
      List<Double> computedFunction = new ArrayList<Double>(cooridantesX.size());
@@ -96,9 +89,6 @@ public class Main {
         List<String> binaryCodedCoordinatesX = codeCoordinatesToBinary(decimalCodedCoordinatesX, sizeOfBitsForCoding);
         List<String> binaryCodedCoordinatesY = codeCoordinatesToBinary(decimalCodedCoordinatesY, sizeOfBitsForCoding);
 
-        //ispis pocetne populacije
-        printingInitialPopulation(cooridantesX, cooridantesY);
-
         //racunanje f(x), ff(x) i ispis (Tabela 3. u PDF-u) - ocjena pocetne populacije
         List<Double> computedFunctionZ = computeFunctionOfCoordinates(cooridantesX, cooridantesY);
 
@@ -124,4 +114,5 @@ public class Main {
 
         //ispis naredne generacije
     }
+
 }

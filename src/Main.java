@@ -49,15 +49,27 @@ public class Main {
         return binaryCodedCoordinates;
     }
 
+    //ispis pocetne populacije, x[i], y[i], decimalno i binarno
+    private static void printingInitialPopulation(List<Double> cooridantesX, List<Double> cooridantesY) {
+        System.out.println("x                   y" );
+        int[] i = {0};
+        cooridantesX.forEach(coordinate -> {
+            System.out.println(coordinate +  " " + cooridantesY.get(i[0]++));
+        });
+    }
+
     //racunanje funkcije z = f(x, y)
     private static List<Double> computeFunctionOfCoordinates(List<Double> cooridantesX, List<Double> cooridantesY) {
-     List<Double> computedFunction = new ArrayList<Double>(cooridantesX.size());
-     Stream.concat(cooridantesX.stream(), cooridantesY.stream()).forEachOrdered(str -> {
-            //   /*
-         //           3*Math.pow((1-c.x),2)*Math.exp(-Math.pow(c.x,2)-Math.pow((c.y+1),2))-10*(c.x/5.0-Math.pow(c.x, 3)-Math.pow(c.y,5))*Math.exp(-Math.pow(c.x, 2)-Math.pow(c.y, 2))-(1/3.0)*Math.exp(-Math.pow(c.x+1, 2)-Math.pow(c.y, 2)));
-         //            */
-     });
-     return computedFunction;
+     List<Double> computedFunctionZ = new ArrayList<Double>(cooridantesX.size());
+     double x, y, z;
+     for(int i = 0; i < cooridantesX.size(); i++)
+     {
+         x = cooridantesX.get(i);
+         y = cooridantesY.get(i);
+         z = 3 * Math.pow((1 - x),2) * Math.exp(-Math.pow(x,2) - Math.pow((y + 1),2)) - 10 * (x / 5.0 - Math.pow(x, 3) - Math.pow(y,5)) * Math.exp(-Math.pow(x, 2) - Math.pow(y, 2))- (1/3.0) *Math.exp(-Math.pow(x + 1, 2)-Math.pow(y, 2));
+         computedFunctionZ.add(z);
+     }
+     return computedFunctionZ;
     }
 
     private static List<Double> computeFitnessFunction(List<Double> computedFunctionZ, boolean isMinimum){
@@ -114,6 +126,8 @@ public class Main {
         //pretvaranje u binarni kod i ispis (Tabela 2. u PDF-u) - pocetna populacija
         List<String> binaryCodedCoordinatesX = codeCoordinatesToBinary(decimalCodedCoordinatesX, sizeOfBitsForCoding);
         List<String> binaryCodedCoordinatesY = codeCoordinatesToBinary(decimalCodedCoordinatesY, sizeOfBitsForCoding);
+
+        printingInitialPopulation(cooridantesX, cooridantesY);
 
         //racunanje f(x), ff(x) i ispis (Tabela 3. u PDF-u) - ocjena pocetne populacije
         List<Double> computedFunctionZ = computeFunctionOfCoordinates(cooridantesX, cooridantesY);

@@ -5,8 +5,11 @@ import java.util.stream.Stream;
 public class Main {
 
     //interval
-    private static Integer LOWER_BOUND = -15;
-    private static Integer HIGHER_BOUND = 15;
+    private static Integer LOWER_BOUND = -10;
+    private static Integer HIGHER_BOUND = 10;
+
+    //preciznost
+    private static Integer PRECISION_P = 2;
 
     //funkcija koja pomocu x, y racuna z(x,y)
     public Double projectFunction(Double x, Double y) {
@@ -15,17 +18,16 @@ public class Main {
 
     //generisanje pocetne populacije
     private static List<Double> generateInitialPopulation(Integer sizeOfPopulation) {
-        return new Random().doubles(LOWER_BOUND,HIGHER_BOUND).limit(sizeOfPopulation).boxed().collect(Collectors.toList());
+        return new Random().doubles(LOWER_BOUND, HIGHER_BOUND).limit(sizeOfPopulation).boxed().collect(Collectors.toList());
     }
 
     private static List<Double> generateRandomNumbers(Integer sizeOfPopulation) {
-        return generateInitialPopulation(sizeOfPopulation);
+        return new Random().doubles(0, 1).limit(sizeOfPopulation).boxed().collect(Collectors.toList());
     }
 
     //broj bita za kodovanje
     private static Integer computeSizeOfBitsForCoding() {
-        Integer p = 2;
-        return (int)Math.ceil(log2((HIGHER_BOUND - LOWER_BOUND) * Math.pow(10, p) + 1)); //n = 𝑙𝑜𝑔2[(𝐺𝑔 − 𝐺𝑑)10𝑝 + 1]
+        return (int)Math.ceil(log2((HIGHER_BOUND - LOWER_BOUND) * Math.pow(10, PRECISION_P) + 1)); //n = 𝑙𝑜𝑔2[(𝐺𝑔 − 𝐺𝑑)10𝑝 + 1]
     }
 
     public static double log2(double n)
@@ -50,11 +52,18 @@ public class Main {
     }
 
     //ispis pocetne populacije, x[i], y[i], decimalno i binarno
-    private static void printingInitialPopulation(List<Double> cooridantesX, List<Double> cooridantesY) {
-        System.out.println("x                   y" );
+    private static void printingInitialPopulation(List<Double> cooridantesX, List<Double> cooridantesY, List<Double> randomNumbers, List<Integer> decimalCodedCoordinatesX, List<Integer> decimalCodedCoordinatesY, List<String> binaryCodedCoordinatesX, List<String> binaryCodedCoordinatesY) {
+        System.out.println("i r                   x                  DEC KOD" );
         int[] i = {0};
         cooridantesX.forEach(coordinate -> {
-            System.out.println(coordinate +  " " + cooridantesY.get(i[0]++));
+            System.out.println(i[0] + " " + randomNumbers.get(i[0]) + " " + coordinate +  " " + decimalCodedCoordinatesX.get(i[0]) + " " + binaryCodedCoordinatesX.get(i[0]++));
+        });
+
+        System.out.println();
+        System.out.println("i r                   y                  DEC KOD" );
+        i[0] = 0;
+        cooridantesY.forEach(coordinate -> {
+            System.out.println(i[0] + " " + randomNumbers.get(i[0]) + " " + coordinate +  " " + decimalCodedCoordinatesY.get(i[0]) + " " + binaryCodedCoordinatesY.get(i[0]++));
         });
     }
 
@@ -127,7 +136,10 @@ public class Main {
         List<String> binaryCodedCoordinatesX = codeCoordinatesToBinary(decimalCodedCoordinatesX, sizeOfBitsForCoding);
         List<String> binaryCodedCoordinatesY = codeCoordinatesToBinary(decimalCodedCoordinatesY, sizeOfBitsForCoding);
 
-        printingInitialPopulation(cooridantesX, cooridantesY);
+        printingInitialPopulation(cooridantesX, cooridantesY, randomNumbers, decimalCodedCoordinatesX, decimalCodedCoordinatesY, binaryCodedCoordinatesX, binaryCodedCoordinatesY);
+
+
+        /*do ovoga je sve u redu*/
 
         //racunanje f(x), ff(x) i ispis (Tabela 3. u PDF-u) - ocjena pocetne populacije
         List<Double> computedFunctionZ = computeFunctionOfCoordinates(cooridantesX, cooridantesY);

@@ -1,3 +1,18 @@
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.scene.Group;
+import javafx.scene.Scene;
+import javafx.scene.chart.PieChartBuilder;
+import javafx.stage.Stage;
+import org.knowm.xchart.BitmapEncoder;
+import org.knowm.xchart.PieChart;
+import org.knowm.xchart.SwingWrapper;
+import org.knowm.xchart.style.PieStyler;
+import org.knowm.xchart.style.Styler;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.MathContext;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -7,8 +22,8 @@ import static jdk.nashorn.internal.objects.NativeMath.round;
 public class Main {
 
     //interval
-    private static Integer LOWER_BOUND = -10;
-    private static Integer HIGHER_BOUND = 10;
+    private static Integer LOWER_BOUND = -3;
+    private static Integer HIGHER_BOUND = 3;
 
     //preciznost
     private static Integer PRECISION_P = 2;
@@ -78,6 +93,7 @@ public class Main {
          x = cooridantesX.get(i);
          y = cooridantesY.get(i);
          z = 3*Math.pow((1-x),2)*Math.exp(-Math.pow(x,2)-Math.pow((y+1),2))-10*(x/5.0-Math.pow(x, 3)-Math.pow(y,5))*Math.exp(-Math.pow(x, 2)-Math.pow(y, 2))-(1/3.0)*Math.exp(-Math.pow(x+1, 2)-Math.pow(y, 2));
+         z =   new BigDecimal(z).round(new MathContext(5)).doubleValue();
          computedFunctionZ.add(z);
      }
      return computedFunctionZ;
@@ -132,11 +148,31 @@ public class Main {
         }
     }
 
+    private static void setChartProperties(PieChart chart, List<Double> individualsSelectionProbaibilityMax) throws IOException {
+        // Customize Chart
+        chart.getStyler().setLegendVisible(false);
+        chart.getStyler().setAnnotationType(PieStyler.AnnotationType.LabelAndPercentage);
+        chart.getStyler().setAnnotationDistance(1.15);
+        chart.getStyler().setPlotContentSize(.7);
+        chart.getStyler().setStartAngleInDegrees(90);
+
+        // Series
+        int i = 0;
+        for(Double individual : individualsSelectionProbaibilityMax)
+            chart.addSeries("p[" + i++ + "] = " + individual, individual);
+
+        // Show it
+        new SwingWrapper(chart).displayChart();
+
+        // Save it
+        BitmapEncoder.saveBitmap(chart, "./Sample_Chart", BitmapEncoder.BitmapFormat.PNG);
+    }
+
     private static void turnRoulette(List<Double> randomNumbers, List<Double> individualsCumulativeProbaibilityMax) {
     //provjeriti koja se jedinka(hromozom) nalazi u kojoj kumulativnoj vjerovatnoci
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         Scanner scInt = new Scanner(System.in);
 
@@ -196,11 +232,16 @@ public class Main {
         //generisanje slucajnih brojeva (ri)
         List<Double> randomNumbers = generateRandomNumbers(sizeOfPopulation);
         roundCoordinates(randomNumbers);    //zaokuruzivanje slucajnih brojeva na 4 decimale
-        turnRoulette(randomNumbers, individualsCumulativeProbaibilityMin);
-        turnRoulette(randomNumbers, individualsCumulativeProbaibilityMax);
-    /*
-    PROMIJENIIT
-    */
+
+     //   List<Double> newMinGeneration = turnRoulette(randomNumbers, individualsCumulativeProbaibilityMin);
+    //    List<Double> newMaxGeneration = turnRoulette(randomNumbers, individualsCumulativeProbaibilityMax);
+        PieChart minChart = new org.knowm.xchart.PieChartBuilder().width(900).height(700).title("Simuliran tocak ruleta (za minimum)").theme(Styler.ChartTheme.GGPlot2).build();
+        setChartProperties(minChart, individualsSelectionProbaibilityMax);
+
+        PieChart maxChart = new org.knowm.xchart.PieChartBuilder().width(900).height(7500).title("Simulirani tocak ruleta (za maximum)").theme(Styler.ChartTheme.GGPlot2).build();
+        setChartProperties(maxChart, individualsSelectionProbaibilityMax);
+
+
 
         //ispis medjugeneracije (ispis kao Tabela 6.)
 
@@ -216,4 +257,5 @@ public class Main {
 
         //ispis naredne generacije
     }
+
 }

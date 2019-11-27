@@ -2,6 +2,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static jdk.nashorn.internal.objects.NativeMath.round;
+
 public class Main {
 
     //interval
@@ -52,18 +54,18 @@ public class Main {
     }
 
     //ispis pocetne populacije, x[i], y[i], decimalno i binarno
-    private static void printingInitialPopulation(List<Double> cooridantesX, List<Double> cooridantesY, List<Double> randomNumbers, List<Integer> decimalCodedCoordinatesX, List<Integer> decimalCodedCoordinatesY, List<String> binaryCodedCoordinatesX, List<String> binaryCodedCoordinatesY) {
-        System.out.println("i r                   x                  DEC KOD" );
+    private static void printingInitialPopulation(List<Double> cooridantesX, List<Double> cooridantesY, List<Integer> decimalCodedCoordinatesX, List<Integer> decimalCodedCoordinatesY, List<String> binaryCodedCoordinatesX, List<String> binaryCodedCoordinatesY) {
+        System.out.println("i x      DEC  KOD" );
         int[] i = {0};
         cooridantesX.forEach(coordinate -> {
-            System.out.println(i[0] + " " + randomNumbers.get(i[0]) + " " + coordinate +  " " + decimalCodedCoordinatesX.get(i[0]) + " " + binaryCodedCoordinatesX.get(i[0]++));
+            System.out.println(i[0] + " " + coordinate +  " " + decimalCodedCoordinatesX.get(i[0]) + " " + binaryCodedCoordinatesX.get(i[0]++));
         });
 
         System.out.println();
-        System.out.println("i r                   y                  DEC KOD" );
+        System.out.println("i y      DEC  KOD" );
         i[0] = 0;
         cooridantesY.forEach(coordinate -> {
-            System.out.println(i[0] + " " + randomNumbers.get(i[0]) + " " + coordinate +  " " + decimalCodedCoordinatesY.get(i[0]) + " " + binaryCodedCoordinatesY.get(i[0]++));
+            System.out.println(i[0] + " " + coordinate +  " " + decimalCodedCoordinatesY.get(i[0]) + " " + binaryCodedCoordinatesY.get(i[0]++));
         });
     }
 
@@ -75,7 +77,7 @@ public class Main {
      {
          x = cooridantesX.get(i);
          y = cooridantesY.get(i);
-         z = 3 * Math.pow((1 - x),2) * Math.exp(-Math.pow(x,2) - Math.pow((y + 1),2)) - 10 * (x / 5.0 - Math.pow(x, 3) - Math.pow(y,5)) * Math.exp(-Math.pow(x, 2) - Math.pow(y, 2))- (1/3.0) *Math.exp(-Math.pow(x + 1, 2)-Math.pow(y, 2));
+         z = 3*Math.pow((1-x),2)*Math.exp(-Math.pow(x,2)-Math.pow((y+1),2))-10*(x/5.0-Math.pow(x, 3)-Math.pow(y,5))*Math.exp(-Math.pow(x, 2)-Math.pow(y, 2))-(1/3.0)*Math.exp(-Math.pow(x+1, 2)-Math.pow(y, 2));
          computedFunctionZ.add(z);
      }
      return computedFunctionZ;
@@ -101,7 +103,7 @@ public class Main {
     }
 
     //racunanje 𝑝[𝑖] = 𝑓𝑓(𝑥[𝑖]) / 𝐹
-    private static List<Double> computeIndividualsSelectionProbaibility(List<Double> fitnessMaxComputedFunction, Double rateOfPopulation) {
+    private static List<Double> computeIndividualsProbaibility(List<Double> fitnessMaxComputedFunction, Double rateOfPopulation) {
         List<Double> computedProbaibility = new ArrayList<Double>(fitnessMaxComputedFunction.size());
         fitnessMaxComputedFunction.stream().forEach(ffx ->{
             computedProbaibility.add(ffx / rateOfPopulation); //𝑝[𝑖] = 𝑓𝑓(𝑥[𝑖]) / 𝐹
@@ -109,10 +111,34 @@ public class Main {
         return  computedProbaibility;
     }
 
+    //racunanje 𝑞[𝑖] = Σ 𝑝[𝑗]
+    private static List<Double> computeCumulativeProbaibility(List<Double> computedProbaibility) {
+        List<Double> computedCumulativeProbaibility = new ArrayList<Double>(computedProbaibility.size());
+        computedCumulativeProbaibility.add(computedProbaibility.get(0));
+        int i[] = {0};
+        computedProbaibility.stream().forEach(pi ->{
+            Double qi = computedCumulativeProbaibility.get(i[0]++) + pi;
+            computedCumulativeProbaibility.add(qi); //kumulativna vjerovatnoca = donja granica + sirina "parceta pite"
+        });
+        return  computedCumulativeProbaibility;
+    }
+
+    private static void roundCoordinates(List<Double> cooridantes) {
+        int i = 0;
+        double rounded;
+        for(Double coordinate : cooridantes) {
+            rounded = (double) Math.round(coordinate * 10000.0) / 10000.0;
+            cooridantes.set(i++, rounded);
+        }
+    }
+
+    private static void turnRoulette(List<Double> randomNumbers, List<Double> individualsCumulativeProbaibilityMax) {
+    //provjeriti koja se jedinka(hromozom) nalazi u kojoj kumulativnoj vjerovatnoci
+    }
+
     public static void main(String[] args) {
 
         Scanner scInt = new Scanner(System.in);
-        Scanner scDouble = new Scanner(System.in);
 
         //broj jedinki
         System.out.println("Unesite broj jedinki ");
@@ -120,10 +146,9 @@ public class Main {
 
         //generisanje pocetne populacije (xi, yi)
         List<Double> cooridantesX = generateInitialPopulation(sizeOfPopulation);
+        roundCoordinates(cooridantesX); //zaokuruzivanje jedinki na 4 decimale
         List<Double> cooridantesY = generateInitialPopulation(sizeOfPopulation);
-
-        //generisanje slucajnih brojeva (ri)
-        List<Double> randomNumbers = generateRandomNumbers(sizeOfPopulation);
+        roundCoordinates(cooridantesY); //zaokuruzivanje jedinki na 4 decimale
 
         //broj bita potrebnih za kodovanje (n)
         Integer sizeOfBitsForCoding = computeSizeOfBitsForCoding();
@@ -136,13 +161,13 @@ public class Main {
         List<String> binaryCodedCoordinatesX = codeCoordinatesToBinary(decimalCodedCoordinatesX, sizeOfBitsForCoding);
         List<String> binaryCodedCoordinatesY = codeCoordinatesToBinary(decimalCodedCoordinatesY, sizeOfBitsForCoding);
 
-        printingInitialPopulation(cooridantesX, cooridantesY, randomNumbers, decimalCodedCoordinatesX, decimalCodedCoordinatesY, binaryCodedCoordinatesX, binaryCodedCoordinatesY);
-
+        printingInitialPopulation(cooridantesX, cooridantesY, decimalCodedCoordinatesX, decimalCodedCoordinatesY, binaryCodedCoordinatesX, binaryCodedCoordinatesY);
 
         /*do ovoga je sve u redu*/
 
         //racunanje f(x), ff(x) i ispis (Tabela 3. u PDF-u) - ocjena pocetne populacije
         List<Double> computedFunctionZ = computeFunctionOfCoordinates(cooridantesX, cooridantesY);
+        computedFunctionZ.stream().forEach(System.out::println);
 
         //racunanje ff(x) za minimum funkcije
         Collections.sort(computedFunctionZ); //uzlazno sortiranje, za minimum
@@ -156,15 +181,26 @@ public class Main {
         Double rateOfPopulation = computeRateOfPopulation(fitnessMinComputedFunction);
 
         //racunanje vjerovatnoce izbora jedinke (p)
-        List<Double> individualsSelectionProbaibilityMax = computeIndividualsSelectionProbaibility(fitnessMaxComputedFunction, rateOfPopulation); // za maksimum
+        List<Double> individualsSelectionProbaibilityMax = computeIndividualsProbaibility(fitnessMaxComputedFunction, rateOfPopulation); // za maksimum
 
-        List<Double> individualsSelectionProbaibilityMin = computeIndividualsSelectionProbaibility(fitnessMinComputedFunction, rateOfPopulation); // za minimum
-
-        //racunanje kumulativne vjerovatnoce (q)
+        List<Double> individualsSelectionProbaibilityMin = computeIndividualsProbaibility(fitnessMinComputedFunction, rateOfPopulation); // za minimum
 
         //racunanje kumulativne vjerovatnoce (q)
+
+        List<Double> individualsCumulativeProbaibilityMax = computeCumulativeProbaibility(individualsSelectionProbaibilityMax); // za maksimum
+
+        List<Double> individualsCumulativeProbaibilityMin = computeCumulativeProbaibility(individualsSelectionProbaibilityMin); // za minimum
 
         //ruletska selekcija (ispis kao Tabela 5.)
+
+        //generisanje slucajnih brojeva (ri)
+        List<Double> randomNumbers = generateRandomNumbers(sizeOfPopulation);
+        roundCoordinates(randomNumbers);    //zaokuruzivanje slucajnih brojeva na 4 decimale
+        turnRoulette(randomNumbers, individualsCumulativeProbaibilityMin);
+        turnRoulette(randomNumbers, individualsCumulativeProbaibilityMax);
+    /*
+    PROMIJENIIT
+    */
 
         //ispis medjugeneracije (ispis kao Tabela 6.)
 
@@ -180,5 +216,4 @@ public class Main {
 
         //ispis naredne generacije
     }
-
 }

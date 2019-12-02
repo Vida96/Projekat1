@@ -26,6 +26,9 @@ public class Main {
     //vjerovatnoca mutacije
     private static Double MUTATION_PROBAIBILITY = 0.05;
 
+    //broj bita za kodovanje
+    private static Integer SIZE_OF_BITS_FOR_CODING;
+
     //generisanje pocetne populacije
     private static List<Double> generateInitialPopulation(Integer SIZE_OF_POPULATION) {
         return new Random().doubles(LOWER_BOUND, HIGHER_BOUND).limit(SIZE_OF_POPULATION).boxed().collect(Collectors.toList());
@@ -36,7 +39,7 @@ public class Main {
     }
 
     //broj bita za kodovanje
-    private static Integer computeSizeOfBitsForCoding() {
+    private static Integer computeSIZE_OF_BITS_FOR_CODING() {
         return (int)Math.ceil(log2((HIGHER_BOUND - LOWER_BOUND) * Math.pow(10, PRECISION_P) + 1)); //n = 𝑙𝑜𝑔2[(𝐺𝑔 − 𝐺𝑑)10𝑝 + 1]
     }
 
@@ -46,19 +49,27 @@ public class Main {
     }
 
     //decimalno kodovanje koordinata x, y u bd
-    private static List<Integer> codeCoordinatesToDecimal(List<Double> cooridantes, Integer sizeOfBitsForCoding) {
+    private static List<Integer> codeCoordinatesToDecimal(List<Double> cooridantes, Integer SIZE_OF_BITS_FOR_CODING) {
         List<Integer> decimalCodedCoordinates = new ArrayList<>(cooridantes.size());
         for(Double coordinate : cooridantes)
-            decimalCodedCoordinates.add((int)Math.ceil((coordinate - LOWER_BOUND) / (HIGHER_BOUND - LOWER_BOUND) * (Math.pow(2, sizeOfBitsForCoding) - 1)));  // bd = [(𝑥 − 𝐺𝑑 / Gg - Gd) * (2^n - 1)]
+            decimalCodedCoordinates.add(codeCoordinateToDecimal(coordinate));  // bd = [(𝑥 − 𝐺𝑑 / Gg - Gd) * (2^n - 1)]
         return decimalCodedCoordinates;
     }
 
+    private static Integer codeCoordinateToDecimal(Double coordinate) {
+        return (int)Math.ceil((coordinate - LOWER_BOUND) / (HIGHER_BOUND - LOWER_BOUND) * (Math.pow(2, SIZE_OF_BITS_FOR_CODING) - 1)); // bd = [(𝑥 − 𝐺𝑑 / Gg - Gd) * (2^n - 1)]
+    }
+
     //binarno kodovanje koordinata x, y
-    private static List<String> codeCoordinatesToBinary(List<Integer> decimalCooridantes, Integer sizeOfBitsForCoding) {
+    private static List<String> codeCoordinatesToBinary(List<Integer> decimalCooridantes, Integer SIZE_OF_BITS_FOR_CODING) {
         List<String> binaryCodedCoordinates = new ArrayList<>(decimalCooridantes.size());
         for(Integer coordinate : decimalCooridantes)
-          binaryCodedCoordinates.add(String.format("%" + sizeOfBitsForCoding.toString() + "s", Integer.toBinaryString(coordinate)).replace(' ', '0'));
+          binaryCodedCoordinates.add(codeToBinary(coordinate));
         return binaryCodedCoordinates;
+    }
+
+    private static String codeToBinary(Integer coordinate) {
+        return  String.format("%" + SIZE_OF_BITS_FOR_CODING.toString() + "s", Integer.toBinaryString(coordinate)).replace(' ', '0');
     }
 
     //ispis pocetne populacije, x[i], y[i], decimalno i binarno
@@ -266,61 +277,124 @@ public class Main {
     }}
 
 
-    private static List<Double> getRecombinationPairs(List<Double> selectedPairs, boolean isMin) {
+    private static List<Double> getRecombinationPairs(List<Double> selectedIndividuals, boolean isMin) {
         Integer index, numberOfPairs = SIZE_OF_POPULATION / 2;
         List<Double> randomNumbers = generateRandomNumbers(numberOfPairs); //slucajni brojevi za rekombinaciju, generisani za svaki par
         List<Double> pairs = new ArrayList<>();
         String str = isMin ? "minimum" : "maximum";
+        System.out.println("Ispis parova za rekombinaciju za " + str);
 
         for(Double randomNumber : randomNumbers)
             if(randomNumber < RECOMBINATION_PROBAIBILITY) //ako važi  𝑟 < 𝑝𝑟 dolazi do rekombinacije
             {
-                if(pairs.size() == 0)
-                    System.out.println("Ispis parova za rekombinaciju za " + str);
                 index = randomNumbers.indexOf(randomNumber); //uzimamo index onog para kod kojeg je zadovoljen uslov rekombinacije (r < pr)
                 System.out.println("Rekombinuje se par broj " + (index + 1));
-                pairs.add(selectedPairs.get(index)); //dodajemo par kod kojeg dolazi do rekombinacije
-                pairs.add(selectedPairs.get(index + 1)); //dodajemo par kod kojeg dolazi do rekombinacije
+
+                //izbor tacke za rekombinaciju
+                Integer mutationPoint = getPoint(); //za minimum (za jedan ili vise parova)
+
+                // rekombinacija
+                List<Double> recombinedPair = recombinePair(selectedIndividuals.get(index), selectedIndividuals.get(index+1), mutationPoint);
+                pairs.add(recombinedPair.get(0)); //dodajemo prvu rekombinovanu jedinku iz para
+                pairs.add(recombinedPair.get(1)); //dodajemo drugu rekombinovanu jedinku iz para
+            }else{
+                index = randomNumbers.indexOf(randomNumber);
+                pairs.add(selectedIndividuals.get(index)); //dodajemo par kod kojeg ne dolazi do rekombinacije
+                pairs.add(selectedIndividuals.get(index + 1)); //dodajemo par kod kojeg ne dolazi do rekombinacije
+                System.out.println("Par " + (index + 1) + " prolazi bez ukrštanja");
             }
 
-        if(pairs.size() == 0 )
-            System.out.println("Nema parova za rekombinaciju za " + str);
         return pairs;
     }
 
-    private static List<Integer> getMutationPoints(Integer numberOfRecombinationPairs, boolean isMin) {
-        List<Double> randomNumbers = generateRandomNumbers(numberOfRecombinationPairs); //generisanje slucajnih brojeva, koliko imamo parova za mutaciju toliko slucajnih brojeva generisemo
-        List<Integer> mutationPoints = new ArrayList<Integer>(numberOfRecombinationPairs);
-        Integer mutationPoint;
-        for(Double randomNumber : randomNumbers)
-        {
-            mutationPoint = (int) Math.ceil(randomNumber * 10); //tacka se dobija iz formule  t = 10∙𝑟, pri cemu uzimam gornji cio dio, kao i u dosadasnjem dijelu zadatka
-            mutationPoints.add(mutationPoint);
-        }
-
-        if(mutationPoints.size() > 0) //ako postoji tacka za mutaciju
-        {
-            String str = isMin ? "minimum" : "maximum";
-            System.out.println("Ispis tacaka rekombinacije za " + str);
-            mutationPoints.stream().forEach(t -> {
-                System.out.print(t + " ");
-            });
-            System.out.println();
-        }
-        return mutationPoints;
+    private static List<Double> recombinePair(Double firstIndividual, Double secondIndividual, Integer mutationPoint) {
+        List<Double> recombinedPair = new ArrayList<>();
+        recombinedPair.add(firstIndividual);
+        recombinedPair.add(secondIndividual);
+        List<Integer> decimalCodedPair = codeCoordinatesToDecimal(recombinedPair, SIZE_OF_BITS_FOR_CODING);
+        List<String> binaryCodedPair = codeCoordinatesToBinary(decimalCodedPair, SIZE_OF_BITS_FOR_CODING);
+        binaryCodedPair = doRecombination(binaryCodedPair, mutationPoint);
+        decimalCodedPair = binaryToDecimal(binaryCodedPair);
+        recombinedPair = decimalToDouble(decimalCodedPair);
+        return recombinedPair;
     }
 
-    private static List<Double> getIndividualForMutation(List<Double> selectedIndividuals, boolean b) {
+    private static List<Double> decimalToDouble(List<Integer> decimalCodedPair) {
+        List<Double> doubleCodedPair = new ArrayList<>();
+        for(Integer decimal : decimalCodedPair){
+            doubleCodedPair.add(convertToDouble(decimal));
+        }
+        return doubleCodedPair;
+    }
+
+    private static Double convertToDouble(Integer decimal) {
+        Double x = HIGHER_BOUND  + (HIGHER_BOUND - LOWER_BOUND) / (Math.pow(2, SIZE_OF_BITS_FOR_CODING) - 1) * decimal;     //𝑥 = 𝐺𝑑 + (𝐺𝑔 −𝐺𝑑) / (2𝑛−1) ∙𝑏𝑑
+        x = new BigDecimal(x).round(new MathContext(5)).doubleValue();
+        return x;
+    }
+
+    private static List<Integer> binaryToDecimal(List<String> binaryCodedPair) {
+        List<Integer> decimalCodedPair = new ArrayList<>();
+        binaryCodedPair.stream().forEach(i -> {
+            Integer decimal = Integer.parseInt(i,2);
+            decimalCodedPair.add(decimal);
+        });
+        return decimalCodedPair;
+    }
+
+    private static List<String> doRecombination(List<String> binaryCodedPair, Integer mutationPoint) {
+        String pom = binaryCodedPair.get(0); //cuvamo prvi string da ga mozemo iskoristi za rekombinaciju sa drugim stringom
+        List<String> recombinedPair = new ArrayList<String>(2);
+        String firstIndividual = changeIndividual(binaryCodedPair.get(0), binaryCodedPair.get(1), mutationPoint);
+        String secondIndividual = changeIndividual(pom, binaryCodedPair.get(1), mutationPoint);
+        recombinedPair.add(firstIndividual);
+        recombinedPair.add(secondIndividual);
+        return recombinedPair;
+    }
+
+    private static String changeIndividual(String s, String s1, Integer mutationPoint) {
+        StringBuilder str = new StringBuilder(s);
+        Integer lowerBoundary = s.length() - mutationPoint;
+        Integer higherBoundary = s.length() - 1;
+        str.replace(lowerBoundary, higherBoundary, s1.substring(lowerBoundary, higherBoundary));
+        return str.toString();
+    }
+
+    private static Integer getPoint() {
+        Double randomNumber = new Random().doubles(0, 1).limit(1).boxed().collect(Collectors.toList()).get(0);
+        Integer mutationPoint = (int) Math.ceil(randomNumber * 10);
+        return mutationPoint;
+    }
+
+    private static List<Double> mutateIndividuals(List<Double> selectedIndividuals, boolean b) {
         List<Double> randomNumbers = generateRandomNumbers(SIZE_OF_POPULATION); //generisanje slucajnih brojeva, koliko imamo jedinki toliko slucajnih brojeva generisemo
-        List<Double> mutationInvididuals = new ArrayList<>();
-        Integer index;
-        for(Double randomNumber : randomNumbers)
-            if(randomNumber < MUTATION_PROBAIBILITY)
-            {
-                index = randomNumbers.indexOf(randomNumber);
-                mutationInvididuals.add(selectedIndividuals.get(index)); //uzimamo jedinku sa tog indexa
+        List<Double> mutatedInvididuals = new ArrayList<>();
+        Double mutatedIndvidual;
+        Integer index, mutationPoint, i = 0;
+        for(Double randomNumber : randomNumbers) {
+            if (randomNumber < MUTATION_PROBAIBILITY) {
+                mutationPoint = getPoint(); //dobijanje tacke gdje se vrsi mutacija
+                Integer decimalCodedIndividual = codeCoordinateToDecimal(selectedIndividuals.get(0)); //kodiranje invdividue u decimalnu vrijednost
+                String binaryCodedIndividual = codeToBinary(decimalCodedIndividual); //kodiranje invdividue u binarnu vrijednost
+                binaryCodedIndividual = doMutation(binaryCodedIndividual, mutationPoint); //mutacija jedinke u odredjenoj tacki
+                decimalCodedIndividual = Integer.parseInt(binaryCodedIndividual,2); //vracanje u decimalnu vrijednost
+                mutatedIndvidual = convertToDouble(decimalCodedIndividual); //vracanje u mutiranu vrijednost (konvertovanu u Double)
+                mutatedInvididuals.add(mutatedIndvidual);   //dodavanje jedinke kod koje je ispunjen uslov mutacije
             }
-        return  mutationInvididuals; //vracamo jedinke koje treba mutirati
+            else
+            {
+                mutatedInvididuals.add(selectedIndividuals.get(i)); //dodavanje jedinke kod koje nije ispunjen uslov mutacije
+            }
+            i++;
+        }
+        return  mutatedInvididuals; //vracamo mutirane jedinke
+    }
+
+    private static String doMutation(String binaryCodedStr, Integer mutationPoint) {
+        StringBuilder str = new StringBuilder(binaryCodedStr);
+        char bit = str.charAt(mutationPoint) == '0' ? '1' : '0';
+        str.setCharAt(4, bit); //promjena bita na mjestu, mutiranje hromozoma
+        return str.toString();
     }
 
     public static void main(String[] args) throws IOException {
@@ -332,15 +406,15 @@ public class Main {
         roundCoordinates(cooridantesY); //zaokuruzivanje jedinki na 5 decimale
 
         //broj bita potrebnih za kodovanje (n)
-        Integer sizeOfBitsForCoding = computeSizeOfBitsForCoding();
+        SIZE_OF_BITS_FOR_CODING = computeSIZE_OF_BITS_FOR_CODING();
 
         //decimalno kodovanje (bd)
-        List<Integer> decimalCodedCoordinatesX = codeCoordinatesToDecimal(cooridantesX, sizeOfBitsForCoding);
-        List<Integer> decimalCodedCoordinatesY = codeCoordinatesToDecimal(cooridantesY, sizeOfBitsForCoding);
+        List<Integer> decimalCodedCoordinatesX = codeCoordinatesToDecimal(cooridantesX, SIZE_OF_BITS_FOR_CODING);
+        List<Integer> decimalCodedCoordinatesY = codeCoordinatesToDecimal(cooridantesY, SIZE_OF_BITS_FOR_CODING);
 
         //pretvaranje u binarni kod i ispis (Tabela 2. u PDF-u) - pocetna populacija
-        List<String> binaryCodedCoordinatesX = codeCoordinatesToBinary(decimalCodedCoordinatesX, sizeOfBitsForCoding);
-        List<String> binaryCodedCoordinatesY = codeCoordinatesToBinary(decimalCodedCoordinatesY, sizeOfBitsForCoding);
+        List<String> binaryCodedCoordinatesX = codeCoordinatesToBinary(decimalCodedCoordinatesX, SIZE_OF_BITS_FOR_CODING);
+        List<String> binaryCodedCoordinatesY = codeCoordinatesToBinary(decimalCodedCoordinatesY, SIZE_OF_BITS_FOR_CODING);
         printingInitialPopulation(cooridantesX, cooridantesY, decimalCodedCoordinatesX, decimalCodedCoordinatesY, binaryCodedCoordinatesX, binaryCodedCoordinatesY);
 
         //racunanje f(x), ff(x) i ispis (Tabela 3. u PDF-u) - ocjena pocetne populacije
@@ -378,7 +452,6 @@ public class Main {
         List<Double> selectedIndividualsMin  = turnRoulette(randomNumbers, individualsCumulativeProbaibilityMin, computedFunctionZ, true); //ispis koji hromozomi su izabrani za min
         List<Double> selectedIndividualsMax  = turnRoulette(randomNumbers, individualsCumulativeProbaibilityMax, computedFunctionZ,false); //ispis koji hromozomi su izabrani za max
 
-
 //        PieChart minChart = new org.knowm.xchart.PieChartBuilder().width(900).height(700).title("Simuliran tocak ruleta (za minimum)").theme(Styler.ChartTheme.GGPlot2).build();
   //      setChartProperties(minChart, individualsSelectionProbaibilityMax);
 
@@ -390,22 +463,18 @@ public class Main {
         printingIntergeneration(selectedIndividualsMin, true); //međugeneracija za minimum
         printingIntergeneration(selectedIndividualsMax, false); //međugeneracija za minimum
 
-        //parovi se formiraju uzimanjem po redu 2 hromozoma iz tabele (0,1 hromozom cine par, zatim 2,3 i tako dalje)
+        Collections.sort(selectedIndividualsMin); //sortiranje radi dobijanja boljeg rjesenja (za min)
+        Collections.sort(selectedIndividualsMax); //sortiranje radi dobijanja boljeg rjesenja (za max)
+
+        //parovi se formiraju uzimanjem po redu 2 hromozoma iz tabele (0,1 hromozom cine par, zatim 2,3 i tako dalje), u sortiranom su poretku pa ce se ukrstiti najbolje jedinke u slucaju rekombinacije
 
         //odluka o ukrstanju, dobijanje liste parova za ukrstanje
-        List<Double> recombinationPairsMin = getRecombinationPairs(selectedIndividualsMin, true); //redne brojeve parova kod kojih dolazi do rekombinacije (za minimum)
-        List<Double> recombinationPairsMax = getRecombinationPairs(selectedIndividualsMax, false); //redne brojeve parova kod kojih dolazi do rekombinacije (za maximum)
-
-        //izbor tacke za rekombinaciju
-        Integer numberOfRecombinationPairs = recombinationPairsMin.size() / 2; //broj parova za rekombinaciju
-        List<Integer> mutationPointsMin = getMutationPoints(numberOfRecombinationPairs, true); //za minimum (za jedan ili vise parova)
-
-        numberOfRecombinationPairs = recombinationPairsMax.size(); //broj parova za rekombinaciju
-        List<Integer> mutationPointsMax = getMutationPoints(numberOfRecombinationPairs, false); //za maximum (za jedan ili vise parova)
+        List<Double> recombinationPairsMin = getRecombinationPairs(selectedIndividualsMin, true); //izbor parova za rekombinaciju i rekombinacija unutar metoda(za minimum)
+        List<Double> recombinationPairsMax = getRecombinationPairs(selectedIndividualsMax, false); //izbor parova za rekombinaciju i rekombinacija unutar metoda (za maximum)
 
         //odluka o mutaciji i izbor tacke za mutaciju
-        List<Double> mutationMin = getIndividualForMutation(selectedIndividualsMin, true); //redne brojeve parova kod kojih dolazi do rekombinacije (za minimum)
-        List<Double> mutationMax = getIndividualForMutation(selectedIndividualsMax, false); //redne brojeve parova kod kojih dolazi do rekombinacije (za maximum)
+        List<Double> mutatedIndividualsMin = mutateIndividuals(selectedIndividualsMin, true); //mutiranje individua kod kojih je ispunjen uslov mutacije (za minimum)
+        List<Double> mutatedIndividualsMax = mutateIndividuals(selectedIndividualsMax, false); //mutiranje individua kod kojih je ispunjen uslov mutacije (za maximum)
 
         //ispis naredne generacije
     }

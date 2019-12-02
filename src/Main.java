@@ -346,7 +346,7 @@ public class Main {
         String pom = binaryCodedPair.get(0); //cuvamo prvi string da ga mozemo iskoristi za rekombinaciju sa drugim stringom
         List<String> recombinedPair = new ArrayList<String>(2);
         String firstIndividual = changeIndividual(binaryCodedPair.get(0), binaryCodedPair.get(1), mutationPoint);
-        String secondIndividual = changeIndividual(pom, binaryCodedPair.get(1), mutationPoint);
+        String secondIndividual = changeIndividual(binaryCodedPair.get(1), pom, mutationPoint);
         recombinedPair.add(firstIndividual);
         recombinedPair.add(secondIndividual);
         return recombinedPair;
@@ -354,16 +354,18 @@ public class Main {
 
     private static String changeIndividual(String s, String s1, Integer mutationPoint) {
         StringBuilder str = new StringBuilder(s);
-        Integer lowerBoundary = s.length() - mutationPoint;
-        Integer higherBoundary = s.length() - 1;
+        Integer lowerBoundary = s.length() - mutationPoint -1;
+        if(lowerBoundary < 0)
+            lowerBoundary = 0;
+        Integer higherBoundary = s.length();
         str.replace(lowerBoundary, higherBoundary, s1.substring(lowerBoundary, higherBoundary));
         return str.toString();
     }
 
     private static Integer getPoint() {
         Double randomNumber = new Random().doubles(0, 1).limit(1).boxed().collect(Collectors.toList()).get(0);
-        Integer mutationPoint = (int) Math.ceil(randomNumber * 10);
-        return mutationPoint;
+        Integer point = (int) Math.ceil(randomNumber * 10);
+        return point;
     }
 
     private static List<Double> mutateIndividuals(List<Double> selectedIndividuals, boolean b) {
@@ -374,7 +376,7 @@ public class Main {
         for(Double randomNumber : randomNumbers) {
             if (randomNumber < MUTATION_PROBAIBILITY) {
                 mutationPoint = getPoint(); //dobijanje tacke gdje se vrsi mutacija
-                Integer decimalCodedIndividual = codeCoordinateToDecimal(selectedIndividuals.get(0)); //kodiranje invdividue u decimalnu vrijednost
+                Integer decimalCodedIndividual = codeCoordinateToDecimal(selectedIndividuals.get(i)); //kodiranje invdividue u decimalnu vrijednost
                 String binaryCodedIndividual = codeToBinary(decimalCodedIndividual); //kodiranje invdividue u binarnu vrijednost
                 binaryCodedIndividual = doMutation(binaryCodedIndividual, mutationPoint); //mutacija jedinke u odredjenoj tacki
                 decimalCodedIndividual = Integer.parseInt(binaryCodedIndividual,2); //vracanje u decimalnu vrijednost
@@ -392,8 +394,11 @@ public class Main {
 
     private static String doMutation(String binaryCodedStr, Integer mutationPoint) {
         StringBuilder str = new StringBuilder(binaryCodedStr);
+        mutationPoint = binaryCodedStr.length() - mutationPoint - 1; //dobijamo mjesto gdje trebamo vrsiti mutaciju
+        if(mutationPoint < 0) //ako se generise broj koji je veci od duzine broja bita dobijenih brojeva, npr. generise se broj 8, a duzina bita brojeva je 8
+            mutationPoint = 0;
         char bit = str.charAt(mutationPoint) == '0' ? '1' : '0';
-        str.setCharAt(4, bit); //promjena bita na mjestu, mutiranje hromozoma
+        str.setCharAt(mutationPoint, bit); //promjena bita na mjestu, mutiranje hromozoma na prethodno generisanoj poziciji (mutation point)
         return str.toString();
     }
 

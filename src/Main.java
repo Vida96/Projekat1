@@ -465,11 +465,12 @@ public class Main {
 
 
         //ispis medjugeneracije (ispis kao Tabela 6.)
+        Collections.sort(selectedIndividualsMin); //sortiranje radi dobijanja boljeg rjesenja (za min)
+        Collections.sort(selectedIndividualsMax); //sortiranje radi dobijanja boljeg rjesenja (za max)
         printingIntergeneration(selectedIndividualsMin, true); //međugeneracija za minimum
         printingIntergeneration(selectedIndividualsMax, false); //međugeneracija za minimum
 
-        Collections.sort(selectedIndividualsMin); //sortiranje radi dobijanja boljeg rjesenja (za min)
-        Collections.sort(selectedIndividualsMax); //sortiranje radi dobijanja boljeg rjesenja (za max)
+
 
         //parovi se formiraju uzimanjem po redu 2 hromozoma iz tabele (0,1 hromozom cine par, zatim 2,3 i tako dalje), u sortiranom su poretku pa ce se ukrstiti najbolje jedinke u slucaju rekombinacije
 
@@ -481,7 +482,17 @@ public class Main {
         List<Double> mutatedIndividualsMin = mutateIndividuals(selectedIndividualsMin, true); //mutiranje individua kod kojih je ispunjen uslov mutacije (za minimum)
         List<Double> mutatedIndividualsMax = mutateIndividuals(selectedIndividualsMax, false); //mutiranje individua kod kojih je ispunjen uslov mutacije (za maximum)
 
-        //ispis naredne generacije
+        //ispis naredne generacije (za minimum)
+        System.out.println("Ispis naredne generacije za minimum");
+        mutatedIndividualsMin.stream().forEach(i -> {
+            System.out.println(mutatedIndividualsMin.indexOf(i) + " " + i);
+        });
+
+        //ispis naredne generacije (za maximum)
+        System.out.println("Ispis naredne generacije za minimum");
+        mutatedIndividualsMax.stream().forEach(i -> {
+            System.out.println(mutatedIndividualsMax.indexOf(i) + " " + i);
+        });
     }
 
 

@@ -27,7 +27,7 @@ public class Main {
     private static Double MUTATION_PROBAIBILITY = 0.05;
 
     //broj bita za kodovanje
-    private static Integer SIZE_OF_BITS_FOR_CODING;
+    private static Integer LENGTH_OF_BITS_FOR_CODING;
 
     //generisanje pocetne populacije
     private static List<Double> generateInitialPopulation(Integer SIZE_OF_POPULATION) {
@@ -39,7 +39,7 @@ public class Main {
     }
 
     //broj bita za kodovanje
-    private static Integer computeSIZE_OF_BITS_FOR_CODING() {
+    private static Integer computeLENGTH_OF_BITS_FOR_CODING() {
         return (int)Math.ceil(log2((HIGHER_BOUND - LOWER_BOUND) * Math.pow(10, PRECISION_P) + 1)); //n = 𝑙𝑜𝑔2[(𝐺𝑔 − 𝐺𝑑)10𝑝 + 1]
     }
 
@@ -49,7 +49,7 @@ public class Main {
     }
 
     //decimalno kodovanje koordinata x, y u bd
-    private static List<Integer> codeCoordinatesToDecimal(List<Double> cooridantes, Integer SIZE_OF_BITS_FOR_CODING) {
+    private static List<Integer> codeCoordinatesToDecimal(List<Double> cooridantes, Integer LENGTH_OF_BITS_FOR_CODING) {
         List<Integer> decimalCodedCoordinates = new ArrayList<>(cooridantes.size());
         for(Double coordinate : cooridantes)
             decimalCodedCoordinates.add(codeCoordinateToDecimal(coordinate));  // bd = [(𝑥 − 𝐺𝑑 / Gg - Gd) * (2^n - 1)]
@@ -57,11 +57,11 @@ public class Main {
     }
 
     private static Integer codeCoordinateToDecimal(Double coordinate) {
-        return (int)Math.ceil((coordinate - LOWER_BOUND) / (HIGHER_BOUND - LOWER_BOUND) * (Math.pow(2, SIZE_OF_BITS_FOR_CODING) - 1)); // bd = [(𝑥 − 𝐺𝑑 / Gg - Gd) * (2^n - 1)]
+        return (int)Math.ceil((coordinate - LOWER_BOUND) / (HIGHER_BOUND - LOWER_BOUND) * (Math.pow(2, LENGTH_OF_BITS_FOR_CODING) - 1)); // bd = [(𝑥 − 𝐺𝑑 / Gg - Gd) * (2^n - 1)]
     }
 
     //binarno kodovanje koordinata x, y
-    private static List<String> codeCoordinatesToBinary(List<Integer> decimalCooridantes, Integer SIZE_OF_BITS_FOR_CODING) {
+    private static List<String> codeCoordinatesToBinary(List<Integer> decimalCooridantes, Integer LENGTH_OF_BITS_FOR_CODING) {
         List<String> binaryCodedCoordinates = new ArrayList<>(decimalCooridantes.size());
         for(Integer coordinate : decimalCooridantes)
           binaryCodedCoordinates.add(codeToBinary(coordinate));
@@ -69,23 +69,26 @@ public class Main {
     }
 
     private static String codeToBinary(Integer coordinate) {
-        return  String.format("%" + SIZE_OF_BITS_FOR_CODING.toString() + "s", Integer.toBinaryString(coordinate)).replace(' ', '0');
+        return  String.format("%" + LENGTH_OF_BITS_FOR_CODING.toString() + "s", Integer.toBinaryString(coordinate)).replace(' ', '0');
     }
 
     //ispis pocetne populacije, x[i], y[i], decimalno i binarno
     private static void printingInitialPopulation(List<Double> cooridantesX, List<Double> cooridantesY, List<Integer> decimalCodedCoordinatesX, List<Integer> decimalCodedCoordinatesY, List<String> binaryCodedCoordinatesX, List<String> binaryCodedCoordinatesY) {
         System.out.println("i x         DEC   KOD" );
+        System.out.println("-----------------------------------------------");
         int[] i = {0};
         cooridantesX.forEach(coordinate -> {
             System.out.println(i[0] + " " + coordinate +  "   " + decimalCodedCoordinatesX.get(i[0]) + "   " + binaryCodedCoordinatesX.get(i[0]++));
         });
 
-        System.out.println();
+        System.out.println("-----------------------------------------------");
         System.out.println("i y         DEC   KOD" );
+        System.out.println("-----------------------------------------------");
         i[0] = 0;
         cooridantesY.forEach(coordinate -> {
             System.out.println(i[0] + " " + coordinate +  "   " + decimalCodedCoordinatesY.get(i[0]) + "   " + binaryCodedCoordinatesY.get(i[0]++));
         });
+        System.out.println("-----------------------------------------------");
     }
 
     //racunanje funkcije z = f(x, y)
@@ -140,20 +143,24 @@ public class Main {
     }
 
     private static void printingInitialPopulationRating(List<Double> cooridantesX, List<Double> cooridantesY, List<Double> computedFunctionZ, List<Double> fitnessMinComputedFunction, boolean isMinimum) {
-        System.out.println();
         if(isMinimum)
             System.out.println("Ocjena populacije za minimum");
         else
             System.out.println("Ocjena populacije za maximum");
+        System.out.println("-----------------------------------------------");
         System.out.println("i   x          y          f(x,y)       ff(x,y)" );
+        System.out.println("-----------------------------------------------");
         int[] i = {0};
         cooridantesX.forEach(coordinate -> {
             System.out.println(i[0] + "   " + cooridantesX.get(i[0]) + "    " + cooridantesY.get(i[0]) + "    " + computedFunctionZ.get(i[0])+ "     " + fitnessMinComputedFunction.get(i[0]++));
         });
+        System.out.println("-----------------------------------------------");
     }
 
-    private static Double computeRateOfPopulation(List<Double> fitnessMinComputedFunction) {
-        return  fitnessMinComputedFunction.stream().mapToDouble(f -> f.doubleValue()).sum();
+    private static Double computeRateOfPopulation(List<Double> fitnessComputedFunction) {
+      Double rate = fitnessComputedFunction.stream().mapToDouble(f -> f.doubleValue()).sum();;
+      rate = new BigDecimal(rate).round(new MathContext(5)).doubleValue();  //zaokruzivanje na 5 decimala
+      return rate;
     }
 
     //racunanje 𝑝[𝑖] = 𝑓𝑓(𝑥[𝑖]) / 𝐹
@@ -175,6 +182,7 @@ public class Main {
         computedProbaibility.stream().forEach(pi ->{
 
             Double qi = computedCumulativeProbaibility.get(i[0]++) + pi;
+            qi = new BigDecimal(qi).round(new MathContext(5)).doubleValue();
             computedCumulativeProbaibility.add(qi); //kumulativna vjerovatnoca = donja granica + sirina "parceta pite"
         });
         return  computedCumulativeProbaibility;
@@ -220,6 +228,7 @@ public class Main {
             System.out.println("Ispis izabranih jedinki za minimum");
         else
             System.out.println("Ispis izabranih jedinki za maximum");
+        System.out.println("-----------------------------------------------");
         for(Double randomNumber : randomNumbers)
         {
             condition = false;
@@ -246,6 +255,7 @@ public class Main {
                 }
             }
         }
+        System.out.println("-----------------------------------------------");
         return selectedIndividuals;
     }
 
@@ -256,25 +266,31 @@ public class Main {
             System.out.println("Ispis vjerovatnoce izbora jedinki za maximum");
 
         int i[] = {0};
+        System.out.println("-----------------------------------------------");
         System.out.println("i p[i]      q[i]" );
+        System.out.println("-----------------------------------------------");
         individualsSelectionProbaibility.forEach(p -> {
             System.out.println(i[0] + " " + p +  "   " + individualsCumulativeProbaibility.get(i[0]++));
         });
+        System.out.println("-----------------------------------------------");
     }
 
     private static void printingIntergeneration(List<Double> selectedIndividualsMax, boolean isMin) {
-    System.out.println();
     if(isMin)
         System.out.println("Ispis međugeneracije za minimum");
     else
         System.out.println("Ispis međugeneracije za maximum");
 
+    System.out.println("-----------------------------------------------");
     int i = 0;
     System.out.println("x           Redni broj u populaciji" );
+    System.out.println("-----------------------------------------------");
     for(Double individual : selectedIndividualsMax)
     {
         System.out.println(individual + "      " + i++);
-    }}
+    }
+        System.out.println("-----------------------------------------------");
+    }
 
 
     private static List<Double> getRecombinationPairs(List<Double> selectedIndividuals, boolean isMin) {
@@ -303,7 +319,7 @@ public class Main {
                 pairs.add(selectedIndividuals.get(index + 1)); //dodajemo par kod kojeg ne dolazi do rekombinacije
                 System.out.println("Par " + (index + 1) + " prolazi bez ukrštanja");
             }
-
+        System.out.println("-----------------------------------------------");
         return pairs;
     }
 
@@ -311,8 +327,8 @@ public class Main {
         List<Double> recombinedPair = new ArrayList<>();
         recombinedPair.add(firstIndividual);
         recombinedPair.add(secondIndividual);
-        List<Integer> decimalCodedPair = codeCoordinatesToDecimal(recombinedPair, SIZE_OF_BITS_FOR_CODING);
-        List<String> binaryCodedPair = codeCoordinatesToBinary(decimalCodedPair, SIZE_OF_BITS_FOR_CODING);
+        List<Integer> decimalCodedPair = codeCoordinatesToDecimal(recombinedPair, LENGTH_OF_BITS_FOR_CODING);
+        List<String> binaryCodedPair = codeCoordinatesToBinary(decimalCodedPair, LENGTH_OF_BITS_FOR_CODING);
         binaryCodedPair = doRecombination(binaryCodedPair, mutationPoint);
         decimalCodedPair = binaryToDecimal(binaryCodedPair);
         recombinedPair = decimalToDouble(decimalCodedPair);
@@ -328,7 +344,7 @@ public class Main {
     }
 
     private static Double convertToDouble(Integer decimal) {
-        Double x = HIGHER_BOUND  + (HIGHER_BOUND - LOWER_BOUND) / (Math.pow(2, SIZE_OF_BITS_FOR_CODING) - 1) * decimal;     //𝑥 = 𝐺𝑑 + (𝐺𝑔 −𝐺𝑑) / (2𝑛−1) ∙𝑏𝑑
+        Double x = HIGHER_BOUND  + (HIGHER_BOUND - LOWER_BOUND) / (Math.pow(2, LENGTH_OF_BITS_FOR_CODING) - 1) * decimal;     //𝑥 = 𝐺𝑑 + (𝐺𝑔 −𝐺𝑑) / (2𝑛−1) ∙𝑏𝑑
         x = new BigDecimal(x).round(new MathContext(5)).doubleValue();
         return x;
     }
@@ -336,7 +352,7 @@ public class Main {
     private static List<Integer> binaryToDecimal(List<String> binaryCodedPair) {
         List<Integer> decimalCodedPair = new ArrayList<>();
         binaryCodedPair.stream().forEach(i -> {
-            Integer decimal = Integer.parseInt(i,2);
+            Integer decimal = Integer.parseInt(i,2);            /* EXCEPTION BACA */
             decimalCodedPair.add(decimal);
         });
         return decimalCodedPair;
@@ -358,7 +374,7 @@ public class Main {
         if(lowerBoundary < 0)
             lowerBoundary = 0;
         Integer higherBoundary = s.length();
-        str.replace(lowerBoundary, higherBoundary, s1.substring(lowerBoundary, higherBoundary));
+        str.replace(lowerBoundary, higherBoundary, s1.substring(lowerBoundary, higherBoundary)); //izlazi iz granica duzine stringa
         return str.toString();
     }
 
@@ -402,6 +418,20 @@ public class Main {
         return str.toString();
     }
 
+    private static void printingNextGeneration(List<Double> mutatedIndividuals, boolean isMin) {
+        if(isMin)
+            System.out.println("Ispis naredne generacije za minimum");
+        else
+            System.out.println("Ispis naredne generacije za maximum");
+
+        System.out.println("-----------------------------------------------");
+        int i[] = {0};
+        mutatedIndividuals.stream().forEach(individual -> {
+            System.out.println(i[0]++ + " " + individual);
+        });
+        System.out.println("-----------------------------------------------");
+    }
+
     public static void main(String[] args) throws IOException {
 
         //generisanje pocetne populacije (xi, yi)
@@ -411,15 +441,22 @@ public class Main {
         roundCoordinates(cooridantesY); //zaokuruzivanje jedinki na 5 decimale
 
         //broj bita potrebnih za kodovanje (n)
-        SIZE_OF_BITS_FOR_CODING = computeSIZE_OF_BITS_FOR_CODING();
+        LENGTH_OF_BITS_FOR_CODING = computeLENGTH_OF_BITS_FOR_CODING();
 
+        System.out.println("-----------------------------------------------");
+        System.out.println("INTERVAL [" + LOWER_BOUND + "," + HIGHER_BOUND + "]");
+        System.out.println("VELIČINA POPULACIJE: " + SIZE_OF_POPULATION);
+        System.out.println("VJEROVATNOĆA REKOMBINACIJE: " + RECOMBINATION_PROBAIBILITY);
+        System.out.println("VJEROVATNOĆA MUTACIJE: " + MUTATION_PROBAIBILITY);
+        System.out.println("BROJ BITA POTREBNIH ZA KODOVANJE: " + LENGTH_OF_BITS_FOR_CODING);
+        System.out.println("-----------------------------------------------");
         //decimalno kodovanje (bd)
-        List<Integer> decimalCodedCoordinatesX = codeCoordinatesToDecimal(cooridantesX, SIZE_OF_BITS_FOR_CODING);
-        List<Integer> decimalCodedCoordinatesY = codeCoordinatesToDecimal(cooridantesY, SIZE_OF_BITS_FOR_CODING);
+        List<Integer> decimalCodedCoordinatesX = codeCoordinatesToDecimal(cooridantesX, LENGTH_OF_BITS_FOR_CODING);
+        List<Integer> decimalCodedCoordinatesY = codeCoordinatesToDecimal(cooridantesY, LENGTH_OF_BITS_FOR_CODING);
 
         //pretvaranje u binarni kod i ispis (Tabela 2. u PDF-u) - pocetna populacija
-        List<String> binaryCodedCoordinatesX = codeCoordinatesToBinary(decimalCodedCoordinatesX, SIZE_OF_BITS_FOR_CODING);
-        List<String> binaryCodedCoordinatesY = codeCoordinatesToBinary(decimalCodedCoordinatesY, SIZE_OF_BITS_FOR_CODING);
+        List<String> binaryCodedCoordinatesX = codeCoordinatesToBinary(decimalCodedCoordinatesX, LENGTH_OF_BITS_FOR_CODING);
+        List<String> binaryCodedCoordinatesY = codeCoordinatesToBinary(decimalCodedCoordinatesY, LENGTH_OF_BITS_FOR_CODING);
         printingInitialPopulation(cooridantesX, cooridantesY, decimalCodedCoordinatesX, decimalCodedCoordinatesY, binaryCodedCoordinatesX, binaryCodedCoordinatesY);
 
         //racunanje f(x), ff(x) i ispis (Tabela 3. u PDF-u) - ocjena pocetne populacije
@@ -434,9 +471,11 @@ public class Main {
         printingInitialPopulationRating(cooridantesX, cooridantesY, computedFunctionZ, fitnessMaxComputedFunction, false);
 
         //racunanje ocjene cijele pocetne populacije (F)
-        System.out.println();
         Double rateOfPopulation = computeRateOfPopulation(fitnessMinComputedFunction);
-        System.out.println("Ocjena populacije iznosi: " + rateOfPopulation);
+        System.out.println("Ocjena populacije za minimum iznosi: " + rateOfPopulation);
+        rateOfPopulation = computeRateOfPopulation(fitnessMaxComputedFunction);
+        System.out.println("Ocjena populacije za maximum iznosi: " + rateOfPopulation);
+        System.out.println("-----------------------------------------------");
 
         //racunanje vjerovatnoce izbora jedinke (p)
         List<Double> individualsSelectionProbaibilityMin = computeIndividualsProbaibility(fitnessMinComputedFunction, rateOfPopulation); // za minimum
@@ -463,14 +502,11 @@ public class Main {
     //    PieChart maxChart = new org.knowm.xchart.PieChartBuilder().width(900).height(7500).title("Simulirani tocak ruleta (za maximum)").theme(Styler.ChartTheme.GGPlot2).build();
       //  setChartProperties(maxChart, individualsSelectionProbaibilityMax);
 
-
         //ispis medjugeneracije (ispis kao Tabela 6.)
-        Collections.sort(selectedIndividualsMin); //sortiranje radi dobijanja boljeg rjesenja (za min)
-        Collections.sort(selectedIndividualsMax); //sortiranje radi dobijanja boljeg rjesenja (za max)
+        Collections.sort(selectedIndividualsMin); //sortiranje radi dobijanja boljeg rjesenja (za min), doci ce do ukrstanja slicnijih jedinki na ovaj nacin
+        Collections.sort(selectedIndividualsMax); //sortiranje radi dobijanja boljeg rjesenja (za max), doci ce do ukrstanja slicnijih jedinki na ovaj nacin
         printingIntergeneration(selectedIndividualsMin, true); //međugeneracija za minimum
         printingIntergeneration(selectedIndividualsMax, false); //međugeneracija za minimum
-
-
 
         //parovi se formiraju uzimanjem po redu 2 hromozoma iz tabele (0,1 hromozom cine par, zatim 2,3 i tako dalje), u sortiranom su poretku pa ce se ukrstiti najbolje jedinke u slucaju rekombinacije
 
@@ -482,20 +518,8 @@ public class Main {
         List<Double> mutatedIndividualsMin = mutateIndividuals(selectedIndividualsMin, true); //mutiranje individua kod kojih je ispunjen uslov mutacije (za minimum)
         List<Double> mutatedIndividualsMax = mutateIndividuals(selectedIndividualsMax, false); //mutiranje individua kod kojih je ispunjen uslov mutacije (za maximum)
 
-        //ispis naredne generacije (za minimum)
-        System.out.println("Ispis naredne generacije za minimum");
-        mutatedIndividualsMin.stream().forEach(i -> {
-            System.out.println(mutatedIndividualsMin.indexOf(i) + " " + i);
-        });
-
-        //ispis naredne generacije (za maximum)
-        System.out.println("Ispis naredne generacije za minimum");
-        mutatedIndividualsMax.stream().forEach(i -> {
-            System.out.println(mutatedIndividualsMax.indexOf(i) + " " + i);
-        });
+        //ispis naredne generacije
+        printingNextGeneration(mutatedIndividualsMin, true);  //ispis naredne generacije (za minimum)
+        printingNextGeneration(mutatedIndividualsMax, false); //ispis naredne generacije (za maximum)
     }
-
-
-
-
 }

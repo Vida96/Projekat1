@@ -11,8 +11,8 @@ import java.util.stream.Collectors;
 public class Main {
 
     //interval
-    private static Integer LOWER_BOUND = -2;
-    private static Integer HIGHER_BOUND = 2;
+    private static Integer LOWER_BOUND = -3;
+    private static Integer HIGHER_BOUND = 3;
 
     //preciznost
     private static Integer PRECISION_P = 2;
@@ -49,7 +49,7 @@ public class Main {
     }
 
     //decimalno kodovanje koordinata x, y u bd
-    private static List<Integer> codeCoordinatesToDecimal(List<Double> cooridantes, Integer LENGTH_OF_BITS_FOR_CODING) {
+    private static List<Integer> codeCoordinatesToDecimal(List<Double> cooridantes) {
         List<Integer> decimalCodedCoordinates = new ArrayList<>(cooridantes.size());
         for(Double coordinate : cooridantes)
             decimalCodedCoordinates.add(codeCoordinateToDecimal(coordinate));  // bd = [(𝑥 − 𝐺𝑑 / Gg - Gd) * (2^n - 1)]
@@ -61,15 +61,27 @@ public class Main {
     }
 
     //binarno kodovanje koordinata x, y
-    private static List<String> codeCoordinatesToBinary(List<Integer> decimalCooridantes, Integer LENGTH_OF_BITS_FOR_CODING) {
+    private static List<String> codeCoordinatesToBinary(List<Integer> decimalCooridantes) {
         List<String> binaryCodedCoordinates = new ArrayList<>(decimalCooridantes.size());
-        for(Integer coordinate : decimalCooridantes)
-          binaryCodedCoordinates.add(codeToBinary(coordinate));
+        String binaryRepresentation;
+        for(Integer coordinate : decimalCooridantes) {
+            /*if(coordinate < 0)
+            {
+                coordinate *=-1;
+                binaryRepresentation = codeToBinary(coordinate);
+                binaryRepresentation = binaryRepresentation.replace('0', '2').replace('1', '0').replace('2', '1');
+            }
+            else {
+              */
+            binaryRepresentation = codeToBinary(coordinate);
+            //}
+            binaryCodedCoordinates.add(binaryRepresentation);
+        }
         return binaryCodedCoordinates;
     }
 
     private static String codeToBinary(Integer coordinate) {
-        return  String.format("%" + LENGTH_OF_BITS_FOR_CODING.toString() + "s", Integer.toBinaryString(coordinate)).replace(' ', '0');
+        return  String.format("%" + LENGTH_OF_BITS_FOR_CODING + "s", Integer.toBinaryString(coordinate)).replaceAll(" ", "0");
     }
 
     //ispis pocetne populacije, x[i], y[i], decimalno i binarno
@@ -327,8 +339,8 @@ public class Main {
         List<Double> recombinedPair = new ArrayList<>();
         recombinedPair.add(firstIndividual);
         recombinedPair.add(secondIndividual);
-        List<Integer> decimalCodedPair = codeCoordinatesToDecimal(recombinedPair, LENGTH_OF_BITS_FOR_CODING);
-        List<String> binaryCodedPair = codeCoordinatesToBinary(decimalCodedPair, LENGTH_OF_BITS_FOR_CODING);
+        List<Integer> decimalCodedPair = codeCoordinatesToDecimal(recombinedPair);
+        List<String> binaryCodedPair = codeCoordinatesToBinary(decimalCodedPair);
         binaryCodedPair = doRecombination(binaryCodedPair, mutationPoint);
         decimalCodedPair = binaryToDecimal(binaryCodedPair);
         recombinedPair = decimalToDouble(decimalCodedPair);
@@ -368,9 +380,9 @@ public class Main {
         return recombinedPair;
     }
 
-    private static String changeIndividual(String s, String s1, Integer mutationPoint) {
+    private static String changeIndividual(String s, String s1, Integer recombinationPoint) {
         StringBuilder str = new StringBuilder(s);
-        Integer lowerBoundary = s.length() - mutationPoint -1;
+        Integer lowerBoundary = s.length() - recombinationPoint -1;
         if(lowerBoundary < 0)
             lowerBoundary = 0;
         Integer higherBoundary = s.length();
@@ -451,12 +463,12 @@ public class Main {
         System.out.println("BROJ BITA POTREBNIH ZA KODOVANJE: " + LENGTH_OF_BITS_FOR_CODING);
         System.out.println("-----------------------------------------------");
         //decimalno kodovanje (bd)
-        List<Integer> decimalCodedCoordinatesX = codeCoordinatesToDecimal(cooridantesX, LENGTH_OF_BITS_FOR_CODING);
-        List<Integer> decimalCodedCoordinatesY = codeCoordinatesToDecimal(cooridantesY, LENGTH_OF_BITS_FOR_CODING);
+        List<Integer> decimalCodedCoordinatesX = codeCoordinatesToDecimal(cooridantesX);
+        List<Integer> decimalCodedCoordinatesY = codeCoordinatesToDecimal(cooridantesY);
 
         //pretvaranje u binarni kod i ispis (Tabela 2. u PDF-u) - pocetna populacija
-        List<String> binaryCodedCoordinatesX = codeCoordinatesToBinary(decimalCodedCoordinatesX, LENGTH_OF_BITS_FOR_CODING);
-        List<String> binaryCodedCoordinatesY = codeCoordinatesToBinary(decimalCodedCoordinatesY, LENGTH_OF_BITS_FOR_CODING);
+        List<String> binaryCodedCoordinatesX = codeCoordinatesToBinary(decimalCodedCoordinatesX);
+        List<String> binaryCodedCoordinatesY = codeCoordinatesToBinary(decimalCodedCoordinatesY);
         printingInitialPopulation(cooridantesX, cooridantesY, decimalCodedCoordinatesX, decimalCodedCoordinatesY, binaryCodedCoordinatesX, binaryCodedCoordinatesY);
 
         //racunanje f(x), ff(x) i ispis (Tabela 3. u PDF-u) - ocjena pocetne populacije

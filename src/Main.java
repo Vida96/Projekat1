@@ -20,13 +20,13 @@ public class Main {
     private static Integer PRECISION_P = 2;
 
     //broj jedinki
-    private static Integer SIZE_OF_POPULATION = 6;
+    private static Integer SIZE_OF_POPULATION = 50;
 
     //vjerovatnoca rekombinacije
-    private static Double RECOMBINATION_PROBAIBILITY = 0.75;
+    private static Double RECOMBINATION_PROBAIBILITY = 0.1;
 
     //vjerovatnoca mutacije
-    private static Double MUTATION_PROBAIBILITY = 0.55;
+    private static Double MUTATION_PROBAIBILITY = 0.08;
 
     //broj bita za kodovanje
     private static Integer LENGTH_OF_BITS_FOR_CODING;
@@ -483,7 +483,7 @@ public class Main {
         printingInitialPopulation(cooridantesX, cooridantesY, decimalCodedCoordinatesX, decimalCodedCoordinatesY, binaryCodedCoordinatesX, binaryCodedCoordinatesY);
 
 
-        for(int i = 0;i < 5; i++) {
+        for(int i = 0; i < NUMBER_OF_ITERATIONS; i++) {
             System.out.println("ITERACIJA BROJ " + (i + 1));
             //racunanje f(x), ff(x) i ispis (Tabela 3. u PDF-u) - ocjena pocetne populacije
             List<Double> computedFunctionZ = computeFunctionOfCoordinates(cooridantesX, cooridantesY);

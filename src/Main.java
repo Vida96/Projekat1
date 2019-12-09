@@ -23,10 +23,10 @@ public class Main {
     private static Integer SIZE_OF_POPULATION = 6;
 
     //vjerovatnoca rekombinacije
-    private static Double RECOMBINATION_PROBAIBILITY = 0.15;
+    private static Double RECOMBINATION_PROBAIBILITY = 0.75;
 
     //vjerovatnoca mutacije
-    private static Double MUTATION_PROBAIBILITY = 0.05;
+    private static Double MUTATION_PROBAIBILITY = 0.55;
 
     //broj bita za kodovanje
     private static Integer LENGTH_OF_BITS_FOR_CODING;
@@ -482,72 +482,78 @@ public class Main {
         List<String> binaryCodedCoordinatesY = codeCoordinatesToBinary(decimalCodedCoordinatesY);
         printingInitialPopulation(cooridantesX, cooridantesY, decimalCodedCoordinatesX, decimalCodedCoordinatesY, binaryCodedCoordinatesX, binaryCodedCoordinatesY);
 
-        //racunanje f(x), ff(x) i ispis (Tabela 3. u PDF-u) - ocjena pocetne populacije
-        List<Double> computedFunctionZ = computeFunctionOfCoordinates(cooridantesX, cooridantesY);
 
-        //racunanje ff(x) za minimum funkcije
-        List<Double> fitnessMinComputedFunction = computeFitnessFunction(computedFunctionZ, true);
-        printingInitialPopulationRating(cooridantesX, cooridantesY, computedFunctionZ, fitnessMinComputedFunction, true);
+        for(int i = 0;i < 5; i++) {
+            System.out.println("ITERACIJA BROJ " + (i + 1));
+            //racunanje f(x), ff(x) i ispis (Tabela 3. u PDF-u) - ocjena pocetne populacije
+            List<Double> computedFunctionZ = computeFunctionOfCoordinates(cooridantesX, cooridantesY);
 
-        //racunanje ff(x) za maximum funkcije
-        List<Double> fitnessMaxComputedFunction = computeFitnessFunction(computedFunctionZ, false);
-        printingInitialPopulationRating(cooridantesX, cooridantesY, computedFunctionZ, fitnessMaxComputedFunction, false);
+            //racunanje ff(x) za minimum funkcije
+            List<Double> fitnessMinComputedFunction = computeFitnessFunction(computedFunctionZ, true);
+            printingInitialPopulationRating(cooridantesX, cooridantesY, computedFunctionZ, fitnessMinComputedFunction, true);
 
-        //racunanje ocjene cijele pocetne populacije (F)
-        Double rateOfPopulation = computeRateOfPopulation(fitnessMinComputedFunction);
-        System.out.println("Ocjena populacije za minimum iznosi: " + rateOfPopulation);
-        rateOfPopulation = computeRateOfPopulation(fitnessMaxComputedFunction);
-        System.out.println("Ocjena populacije za maximum iznosi: " + rateOfPopulation);
-        System.out.println("===============================================");
+            //racunanje ff(x) za maximum funkcije
+            List<Double> fitnessMaxComputedFunction = computeFitnessFunction(computedFunctionZ, false);
+            printingInitialPopulationRating(cooridantesX, cooridantesY, computedFunctionZ, fitnessMaxComputedFunction, false);
 
-        //racunanje vjerovatnoce izbora jedinke (p)
-        List<Double> individualsSelectionProbaibilityMin = computeIndividualsProbaibility(fitnessMinComputedFunction, rateOfPopulation); // za minimum
-        List<Double> individualsSelectionProbaibilityMax = computeIndividualsProbaibility(fitnessMaxComputedFunction, rateOfPopulation); // za maksimum
+            //racunanje ocjene cijele pocetne populacije (F)
+            Double rateOfPopulation = computeRateOfPopulation(fitnessMinComputedFunction);
+            System.out.println("Ocjena populacije za minimum iznosi: " + rateOfPopulation);
+            rateOfPopulation = computeRateOfPopulation(fitnessMaxComputedFunction);
+            System.out.println("Ocjena populacije za maximum iznosi: " + rateOfPopulation);
+            System.out.println("===============================================");
 
-        //racunanje kumulativne vjerovatnoce (q)
-        List<Double> individualsCumulativeProbaibilityMin = computeCumulativeProbaibility(individualsSelectionProbaibilityMin); // za minimum
-        List<Double> individualsCumulativeProbaibilityMax = computeCumulativeProbaibility(individualsSelectionProbaibilityMax); // za maksimum
+            //racunanje vjerovatnoce izbora jedinke (p)
+            List<Double> individualsSelectionProbaibilityMin = computeIndividualsProbaibility(fitnessMinComputedFunction, rateOfPopulation); // za minimum
+            List<Double> individualsSelectionProbaibilityMax = computeIndividualsProbaibility(fitnessMaxComputedFunction, rateOfPopulation); // za maksimum
 
-        //Tabela 4. Vjerovatnoce izbora hromozoma pocetne populacije
-        printingIndividualsProbaibility(individualsSelectionProbaibilityMin, individualsCumulativeProbaibilityMin, true);
-        printingIndividualsProbaibility(individualsSelectionProbaibilityMax, individualsCumulativeProbaibilityMax, false);
+            //racunanje kumulativne vjerovatnoce (q)
+            List<Double> individualsCumulativeProbaibilityMin = computeCumulativeProbaibility(individualsSelectionProbaibilityMin); // za minimum
+            List<Double> individualsCumulativeProbaibilityMax = computeCumulativeProbaibility(individualsSelectionProbaibilityMax); // za maksimum
 
-        //generisanje slucajnih brojeva (ri)
-        List<Double> randomNumbers = generateRandomNumbers(SIZE_OF_POPULATION);
-        roundCoordinates(randomNumbers);    //zaokuruzivanje slucajnih brojeva na 5 decimale
+            //Tabela 4. Vjerovatnoce izbora hromozoma pocetne populacije
+            printingIndividualsProbaibility(individualsSelectionProbaibilityMin, individualsCumulativeProbaibilityMin, true);
+            printingIndividualsProbaibility(individualsSelectionProbaibilityMax, individualsCumulativeProbaibilityMax, false);
 
-        List<Double> selectedIndividualsXMin = turnRoulette(randomNumbers, individualsCumulativeProbaibilityMin, cooridantesX, true); //ispis koji hromozomi su izabrani za min
-        List<Double> selectedIndividualsYMin = turnRoulette(randomNumbers, individualsCumulativeProbaibilityMin, cooridantesY, true); //ispis koji hromozomi su izabrani za min
+            //generisanje slucajnih brojeva (ri)
+            List<Double> randomNumbers = generateRandomNumbers(SIZE_OF_POPULATION);
+            roundCoordinates(randomNumbers);    //zaokuruzivanje slucajnih brojeva na 5 decimale
 
-        List<Double> selectedIndividualsXMax = turnRoulette(randomNumbers, individualsCumulativeProbaibilityMax, cooridantesX, false); //ispis koji hromozomi su izabrani za max
-        List<Double> selectedIndividualsYMax = turnRoulette(randomNumbers, individualsCumulativeProbaibilityMax, cooridantesY, false); //ispis koji hromozomi su izabrani za max
+            List<Double> selectedIndividualsXMin = turnRoulette(randomNumbers, individualsCumulativeProbaibilityMin, cooridantesX, true); //ispis koji hromozomi su izabrani za min
+            List<Double> selectedIndividualsYMin = turnRoulette(randomNumbers, individualsCumulativeProbaibilityMin, cooridantesY, true); //ispis koji hromozomi su izabrani za min
 
-        //PieChart minChart = new org.knowm.xchart.PieChartBuilder().width(900).height(700).title("Simuliran tocak ruleta (za minimum)").theme(Styler.ChartTheme.GGPlot2).build();
-        //      setChartProperties(minChart, individualsSelectionProbaibilityMax);
+            List<Double> selectedIndividualsXMax = turnRoulette(randomNumbers, individualsCumulativeProbaibilityMax, cooridantesX, false); //ispis koji hromozomi su izabrani za max
+            List<Double> selectedIndividualsYMax = turnRoulette(randomNumbers, individualsCumulativeProbaibilityMax, cooridantesY, false); //ispis koji hromozomi su izabrani za max
 
-        //    PieChart maxChart = new org.knowm.xchart.PieChartBuilder().width(900).height(7500).title("Simulirani tocak ruleta (za maximum)").theme(Styler.ChartTheme.GGPlot2).build();
-        //  setChartProperties(maxChart, individualsSelectionProbaibilityMax);
+            //PieChart minChart = new org.knowm.xchart.PieChartBuilder().width(900).height(700).title("Simuliran tocak ruleta (za minimum)").theme(Styler.ChartTheme.GGPlot2).build();
+            //      setChartProperties(minChart, individualsSelectionProbaibilityMax);
 
-        //ispis medjugeneracije (ispis kao Tabela 6.)
-        printingGeneration(selectedIndividualsXMin ,selectedIndividualsYMin, true, false); //međugeneracija za minimum
-        printingGeneration(selectedIndividualsXMax, selectedIndividualsYMax, false, false); //međugeneracija za minimum
+            //    PieChart maxChart = new org.knowm.xchart.PieChartBuilder().width(900).height(7500).title("Simulirani tocak ruleta (za maximum)").theme(Styler.ChartTheme.GGPlot2).build();
+            //  setChartProperties(maxChart, individualsSelectionProbaibilityMax);
 
-        //parovi se formiraju uzimanjem po redu 2 hromozoma iz tabele (0,1 hromozom cine par, zatim 2,3 i tako dalje)
+            //ispis medjugeneracije (ispis kao Tabela 6.)
+            printingGeneration(selectedIndividualsXMin, selectedIndividualsYMin, true, false); //međugeneracija za minimum
+            printingGeneration(selectedIndividualsXMax, selectedIndividualsYMax, false, false); //međugeneracija za minimum
 
-        //odluka o ukrstanju, dobijanje liste parova za ukrstanje
-        List<Double> recombinationPairsXMin = getRecombinationPairs(selectedIndividualsXMin, true, true); //izbor parova za rekombinaciju i rekombinacija unutar metoda(za minimum)
-        List<Double> recombinationPairsYMin = getRecombinationPairs(selectedIndividualsYMin, true, false); //izbor parova za rekombinaciju i rekombinacija unutar metoda(za minimum)
-        List<Double> recombinationPairsXMax = getRecombinationPairs(selectedIndividualsXMax, false, true); //izbor parova za rekombinaciju i rekombinacija unutar metoda (za maximum)
-        List<Double> recombinationPairsYMax = getRecombinationPairs(selectedIndividualsYMax, false, false); //izbor parova za rekombinaciju i rekombinacija unutar metoda (za maximum)
+            //parovi se formiraju uzimanjem po redu 2 hromozoma iz tabele (0,1 hromozom cine par, zatim 2,3 i tako dalje)
 
-        //odluka o mutaciji i izbor tacke za mutaciju
-        List<Double> mutatedIndividualsXMin = mutateIndividuals(recombinationPairsXMin, true); //mutiranje individua kod kojih je ispunjen uslov mutacije (za minimum)
-        List<Double> mutatedIndividualsYMin = mutateIndividuals(recombinationPairsYMin, true); //mutiranje individua kod kojih je ispunjen uslov mutacije (za minimum)
-        List<Double> mutatedIndividualsXMax = mutateIndividuals(recombinationPairsXMax, false); //mutiranje individua kod kojih je ispunjen uslov mutacije (za maximum)
-        List<Double> mutatedIndividualsYMax = mutateIndividuals(recombinationPairsYMax, false); //mutiranje individua kod kojih je ispunjen uslov mutacije (za maximum)
+            //odluka o ukrstanju, dobijanje liste parova za ukrstanje
+            List<Double> recombinationPairsXMin = getRecombinationPairs(selectedIndividualsXMin, true, true); //izbor parova za rekombinaciju i rekombinacija unutar metoda(za minimum)
+            List<Double> recombinationPairsYMin = getRecombinationPairs(selectedIndividualsYMin, true, false); //izbor parova za rekombinaciju i rekombinacija unutar metoda(za minimum)
+            List<Double> recombinationPairsXMax = getRecombinationPairs(selectedIndividualsXMax, false, true); //izbor parova za rekombinaciju i rekombinacija unutar metoda (za maximum)
+            List<Double> recombinationPairsYMax = getRecombinationPairs(selectedIndividualsYMax, false, false); //izbor parova za rekombinaciju i rekombinacija unutar metoda (za maximum)
 
-        //ispis naredne generacije
-        printingGeneration(mutatedIndividualsXMin, mutatedIndividualsYMin, true, true);  //ispis naredne generacije (za minimum)
-        printingGeneration(mutatedIndividualsXMax, mutatedIndividualsYMax, false, true); //ispis naredne generacije (za maximum)
+            //odluka o mutaciji i izbor tacke za mutaciju
+            List<Double> mutatedIndividualsXMin = mutateIndividuals(recombinationPairsXMin, true); //mutiranje individua kod kojih je ispunjen uslov mutacije (za minimum)
+            List<Double> mutatedIndividualsYMin = mutateIndividuals(recombinationPairsYMin, true); //mutiranje individua kod kojih je ispunjen uslov mutacije (za minimum)
+            List<Double> mutatedIndividualsXMax = mutateIndividuals(recombinationPairsXMax, false); //mutiranje individua kod kojih je ispunjen uslov mutacije (za maximum)
+            List<Double> mutatedIndividualsYMax = mutateIndividuals(recombinationPairsYMax, false); //mutiranje individua kod kojih je ispunjen uslov mutacije (za maximum)
+
+            //ispis naredne generacije
+            printingGeneration(mutatedIndividualsXMin, mutatedIndividualsYMin, true, true);  //ispis naredne generacije (za minimum)
+            printingGeneration(mutatedIndividualsXMax, mutatedIndividualsYMax, false, true); //ispis naredne generacije (za maximum)
+            cooridantesX = mutatedIndividualsXMin;
+            cooridantesY = mutatedIndividualsYMin;
+        }
     }
 }

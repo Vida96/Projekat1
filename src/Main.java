@@ -25,7 +25,7 @@ public class Main {
     private static Integer PRECISION_P = 2;
 
     //broj jedinki
-    private static Integer SIZE_OF_POPULATION = 10;
+    private static Integer SIZE_OF_POPULATION = 5;
 
     //vjerovatnoća rekombinacije
     private static Double RECOMBINATION_PROBAIBILITY = 0.00;
@@ -229,23 +229,16 @@ public class Main {
     }
 
     //generisanje prikaza Pie chart-a
-    private static void setChartProperties(PieChart chart, List<Double> individualsSelectionProbaibilityMax) throws IOException {
-        // Customize Chart
+    private static void setChartProperties(PieChart chart, List<Double> individualsSelectionProbaibility) throws IOException {
         chart.getStyler().setLegendVisible(false);
         chart.getStyler().setAnnotationType(PieStyler.AnnotationType.LabelAndPercentage);
         chart.getStyler().setAnnotationDistance(1.15);
         chart.getStyler().setPlotContentSize(.7);
         chart.getStyler().setStartAngleInDegrees(90);
 
-        // Series
         int i = 0;
-        for (Double individual : individualsSelectionProbaibilityMax)
+        for (Double individual : individualsSelectionProbaibility)
             chart.addSeries("p[" + i++ + "] = " + individual, individual);
-
-        // Show it
-        //      new SwingWrapper(chart).displayChart();
-
-        // Save it
         BitmapEncoder.saveBitmap(chart, "./Sample_Chart", BitmapEncoder.BitmapFormat.PNG);
     }
 
@@ -280,7 +273,7 @@ public class Main {
                 if (i == (SIZE_OF_POPULATION - 1)) //ako dodjemo do kraja pite
                 {
                     selectedIndividual = computedFunctionZ.get(i);
-                    System.out.println("Izabran je hromozomm " + i + " [" + selectedIndividual + " ] pri cemu je generisan slučajan broj " + randomNumber);
+                    System.out.println("Izabran je hromozomm " + i + "ł [" + selectedIndividual + " ] pri cemu je generisan slučajan broj " + randomNumber);
                     condition = true;
                     selectedIndividuals.add(computedFunctionZ.get(i)); //dodajemo izabrani hromozom
                 }
@@ -544,7 +537,7 @@ public class Main {
                 selectedIndividualsXMin = turnRoulette(randomNumbers, individualsCumulativeProbaibilityMin, cooridantesX, true); //ispis koji hromozomi su izabrani za min
                 selectedIndividualsYMin = turnRoulette(randomNumbers, individualsCumulativeProbaibilityMin, cooridantesY, true); //ispis koji hromozomi su izabrani za min
 
-                PieChart minChart = new org.knowm.xchart.PieChartBuilder().width(900).height(700).title("Simuliran tocak ruleta (za minimum)").theme(Styler.ChartTheme.GGPlot2).build();
+                PieChart minChart = new org.knowm.xchart.PieChartBuilder().width(900).height(700).title("Ruletska selekcija").theme(Styler.ChartTheme.GGPlot2).build();
                 setChartProperties(minChart, individualsSelectionProbaibilityMin);
 
                 //ispis međugeneracije (ispis kao Tabela 6.)

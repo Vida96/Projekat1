@@ -271,7 +271,7 @@ public class Main {
 
                 if ((boundary1 < randomNumber) && (boundary2 > randomNumber)) {
                     selectedIndividual = computedFunctionZ.get(i);
-                    System.out.println("Izabran je hromozomm " + i + " [" + selectedIndividual + " ] pri cemu je generisan slucajan broj " + randomNumber);
+                    System.out.println("Izabran je hromozomm " + i + " [" + selectedIndividual + " ] pri cemu je generisan slučajan broj " + randomNumber);
                     selectedIndividuals.add(selectedIndividual); //dodajemo izabrani hromozom
                     condition = true;
                 }
@@ -280,7 +280,7 @@ public class Main {
                 if (i == (SIZE_OF_POPULATION - 1)) //ako dodjemo do kraja pite
                 {
                     selectedIndividual = computedFunctionZ.get(i);
-                    System.out.println("Izabran je hromozomm " + i + " [" + selectedIndividual + " ] pri cemu je generisan slucajan broj " + randomNumber);
+                    System.out.println("Izabran je hromozomm " + i + " [" + selectedIndividual + " ] pri cemu je generisan slučajan broj " + randomNumber);
                     condition = true;
                     selectedIndividuals.add(computedFunctionZ.get(i)); //dodajemo izabrani hromozom
                 }
@@ -415,7 +415,7 @@ public class Main {
             lowerBoundary = 0;
         Integer higherBoundary;
 
-        if (s.length() > s1.length()) //u slucaju da je u pitanju negativan broj on ce imati vise bita pa ce iskakati iz opsega
+        if (s.length() > s1.length()) //u slučaju da je u pitanju negativan broj on ce imati vise bita pa ce iskakati iz opsega
             higherBoundary = s1.length();
         else
             higherBoundary = s.length();
@@ -625,7 +625,8 @@ public class Main {
             }
         }
         List<Double> computedFunctionZ = computeFunctionOfCoordinates(cooridantesX, cooridantesY);
+
         //ispis populacije nakon svih iteracija
-        printingPopulationRating(cooridantesX, cooridantesY, computedFunctionZ, isMin ? fitnessMinComputedFunction : fitnessMaxComputedFunction, false);
+        printingPopulationRating(cooridantesX, cooridantesY, computedFunctionZ, isMin ? fitnessMinComputedFunction : fitnessMaxComputedFunction, isMin);
     }
 }
